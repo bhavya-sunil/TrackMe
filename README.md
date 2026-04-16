@@ -1,6 +1,9 @@
 # TrackMe
 Real time public transport tracking system
+<<<<<<< HEAD
 
+=======
+>>>>>>> 58b537fc9697c12fdf59c4dbcd5c6f2e26a6d4ec
 ## Problem
 Many cities lack real-time public transport tracking, causing delays and inconvenience for passengers.
 

@@ -1,27 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Driver GPS Simulator</title>
+<title>Driver Terminal - TrackMe</title>
 <script src="/socket.io/socket.io.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+  body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
+  .glass-card { background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); }
+  .pulse-ring { animation: pulse-border 2s infinite; }
+  @keyframes pulse-border {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  }
+</style>
 </head>
-<body class="p-10 bg-gray-100">
-<h1 class="text-3xl font-bold">Driver GPS Sender</h1>
+<body class="flex items-center justify-center min-h-screen p-6 relative overflow-hidden">
+<!-- Background decor -->
+<div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-20"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-emerald-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-20"></div>
 
-<label>Bus ID:</label>
-<input id="busId" class="border p-2 rounded block mb-4" placeholder="e.g., MH-42">
+<div class="glass-card rounded-3xl p-8 md:p-12 shadow-2xl w-full max-w-lg relative z-10 text-center">
+  <div class="mb-8">
+    <div class="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-700 shadow-inner text-blue-400 text-3xl">
+      <i class="fa-solid fa-bus-simple"></i>
+    </div>
+    <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">Driver Terminal</h1>
+    <p class="text-slate-400 mt-2 text-sm">Broadcast your live GPS location</p>
+  </div>
 
-<button id="startBtn" class="bg-green-600 text-white px-6 py-2 rounded">Start Sending GPS</button>
+  <div class="text-left mb-6">
+    <label class="block text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wide">Vehicle Assignment</label>
+    <div class="relative">
+      <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
+        <i class="fa-solid fa-hashtag"></i>
+      </div>
+      <input id="busId" class="w-full bg-slate-800 border-slate-700 text-center text-white text-lg font-bold rounded-xl py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 border transition-all placeholder-slate-600" placeholder="e.g. MH-42">
+    </div>
+  </div>
 
-<p id="status" class="text-blue-700 mt-4"></p>
+  <button id="startBtn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-lg px-6 py-4 rounded-xl transition-all shadow-lg hover:shadow-emerald-500/40 flex items-center justify-center gap-3 group">
+    <span>Initialize Tracking</span>
+    <i class="fa-solid fa-satellite-dish group-hover:animate-pulse"></i>
+  </button>
+
+  <div id="statusCard" class="hidden mt-8 p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
+    <div class="flex items-center justify-center gap-3 text-emerald-400 font-semibold">
+      <div class="w-3 h-3 bg-emerald-500 rounded-full animate-ping"></div>
+      Transmitting GPS Data
+    </div>
+    <p class="text-slate-500 text-xs mt-2 uppercase tracking-wide">Signal Active &bull; 1Hz Refresh</p>
+  </div>
+</div>
 
 <script>
 const socket = io();
 document.getElementById("startBtn").onclick = ()=>{
   const busId = document.getElementById("busId").value;
-  if(!busId) return alert("Enter bus ID");
+  if(!busId) {
+    return Swal.fire({icon: 'warning', title: 'Missing ID', text: 'Please configure your Vehicle Assignment ID.', background: '#1e293b', color: '#f8fafc'});
+  }
 
-  document.getElementById("status").innerText="Sending mock GPS every 1 sec...";
+  // Update UI state
+  const btn = document.getElementById("startBtn");
+  btn.disabled = true;
+  btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-500');
+  btn.classList.add('bg-slate-700', 'text-emerald-400', 'pulse-ring', 'cursor-not-allowed');
+  btn.innerHTML = '<span>System Active</span> <i class="fa-solid fa-check-circle"></i>';
+  
+  document.getElementById("statusCard").classList.remove('hidden');
+
+  Swal.fire({icon: 'success', title: 'System Online', text: 'GPS transmitting to Command Center.', background: '#1e293b', color: '#f8fafc', timer: 1500, showConfirmButton: false});
 
   // Route 18 starting point
   let currentLat = 17.3850;
