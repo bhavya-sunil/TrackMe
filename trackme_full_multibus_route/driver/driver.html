@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Driver GPS Simulator</title>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-10 bg-gray-100">
+<h1 class="text-3xl font-bold">Driver GPS Sender</h1>
+
+<label>Bus ID:</label>
+<input id="busId" class="border p-2 rounded block mb-4" placeholder="e.g., MH-42">
+
+<button id="startBtn" class="bg-green-600 text-white px-6 py-2 rounded">Start Sending GPS</button>
+
+<p id="status" class="text-blue-700 mt-4"></p>
+
+<script>
+const socket = io();
+document.getElementById("startBtn").onclick = ()=>{
+  const busId = document.getElementById("busId").value;
+  if(!busId) return alert("Enter bus ID");
+
+  document.getElementById("status").innerText="Sending mock GPS every 1 sec...";
+
+  // Route 18 starting point
+  let currentLat = 17.3850;
+  let currentLng = 78.4867;
+
+  setInterval(()=>{
+    // smoothly move the bus north-east along the route
+    currentLat += 0.00015;
+    currentLng += 0.00015;
+
+    socket.emit("updateBusLocation", {
+      busId: busId,
+      lat: currentLat,
+      lng: currentLng
+    });
+  }, 1000); // 1 second intervals for smooth animation
+};
+</script>
+</body>
+</html>
